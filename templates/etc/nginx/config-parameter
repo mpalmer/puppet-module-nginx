@@ -1,4 +1,4 @@
 #             THIS FILE IS AUTOMATICALLY DISTRIBUTED BY PUPPET.
 #                  ANY LOCAL CHANGES WILL BE OVERWRITTEN!
 
-<%= @nginx_config_parameter_name %> = <%= @nginx_config_parameter_value %>;
+<%= @nginx_config_parameter_name %> <%= @nginx_config_parameter_value %>;

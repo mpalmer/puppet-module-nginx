@@ -13,7 +13,7 @@ describe "nginx::config::parameter" do
 		it "sets the config parameter we want" do
 			expect(subject).
 			  to contain_nginx__config("xyzzy").
-			  with_content(/^\s*xyzzy = faffenheim;$/)
+			  with_content(/^\s*xyzzy faffenheim;$/)
 		end
 	end
 
@@ -35,7 +35,7 @@ describe "nginx::config::parameter" do
 		it "sets the config parameter we want" do
 			expect(subject).
 			  to contain_nginx__config("foo/bar/wombat/xyzzy").
-			  with_content(/^\s*xyzzy = faffenheim;$/)
+			  with_content(/^\s*xyzzy faffenheim;$/)
 		end
 	end
 	
@@ -59,7 +59,7 @@ describe "nginx::config::parameter" do
 		it "sets the config parameter we want" do
 			expect(subject).
 			  to contain_nginx__config("foo/bar/wombat/xyzzy").
-			  with_content(/^\s*blargle = faffenheim;$/)
+			  with_content(/^\s*blargle faffenheim;$/)
 		end
 	end
 end
