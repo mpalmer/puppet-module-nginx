@@ -88,7 +88,7 @@
 #     for HTTP requests for the vhost's name(s), and unconditionally
 #     redirect all HTTP requests to HTTPS requests to `server_name`.
 #
-#  * `ssl-default` (boolean; optional; default `false`)
+#  * `ssl_default` (boolean; optional; default `false`)
 #
 #     Whether or not this site is the default for HTTPS requests to this server
 #     (or at least to the IP address specified in `ssl_ip`, if set).
