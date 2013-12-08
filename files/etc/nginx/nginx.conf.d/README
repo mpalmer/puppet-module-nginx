@@ -1,0 +1,9 @@
+The contents of this directory, and all subdirectories therein, are managed
+automatically by Puppet.  That means that if you add, modify, or remove
+files in this tree by hand, your changes will be reverted next time Puppet
+runs.
+
+If you really, *really* need to make changes to this configuration tree by
+hand, you will need to either disable Puppet from running for the duration
+of your change's effective lifetime, or else somehow make the changes you
+have made immutable.

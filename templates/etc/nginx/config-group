@@ -1,0 +1,6 @@
+#             THIS FILE IS AUTOMATICALLY DISTRIBUTED BY PUPPET.
+#                  ANY LOCAL CHANGES WILL BE OVERWRITTEN!
+
+<%= @nginx_config_group_context %> {
+	include /etc/nginx/nginx.conf.d/<%= @nginx_config_group_name %>/*.conf;
+}
