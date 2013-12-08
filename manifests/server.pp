@@ -101,7 +101,7 @@ define nginx::server (
 	# Core parameters we like to set
 	nginx::config::parameter {
 		"worker_processes":
-			value => $nginx_server_workers;
+			value => $workers;
 		"user":
 			value => $nginx_server_user;
 		"error_log":
