@@ -1,6 +1,6 @@
 # The master type for setting up nginx configuration snippets.
 #
-# Introductory warning: this type is not designed to fulfill all of your
+# **Introductory warning**: this type is not designed to fulfill all of your
 # nginx configuration needs.  For the vast majority of your configuration,
 # you should be using some *other* type to do your configuration for you. 
 # If you find yourself using this type a lot in your end manifests, either
