@@ -50,61 +50,61 @@ define nginx::config::fastcgi(
 	nginx::config::parameter {
 		"${ctx}/fastcgi_param_QUERY_STRING":
 			param => "fastcgi_param",
-			value => '$query_string';
+			value => 'QUERY_STRING $query_string';
 		"${ctx}/fastcgi_param_REQUEST_METHOD":
 			param => "fastcgi_param",
-			value => '$request_method';
+			value => 'REQUEST_METHOD $request_method';
 		"${ctx}/fastcgi_param_CONTENT_TYPE":
 			param => "fastcgi_param",
-			value => '$content_type';
+			value => 'CONTENT_TYPE $content_type';
 		"${ctx}/fastcgi_param_CONTENT_LENGTH":
 			param => "fastcgi_param",
-			value => '$content_length';
+			value => 'CONTENT_LENGTH $content_length';
 		"${ctx}/fastcgi_param_SCRIPT_FILENAME":
 			param => "fastcgi_param",
-			value => '$request_filename';
+			value => 'SCRIPT_FILENAME $request_filename';
 		"${ctx}/fastcgi_param_SCRIPT_NAME":
 			param => "fastcgi_param",
-			value => '$fastcgi_script_name';
+			value => 'SCRIPT_NAME $fastcgi_script_name';
 		"${ctx}/fastcgi_param_REQUEST_URI":
 			param => "fastcgi_param",
-			value => '$request_uri';
+			value => 'REQUEST_URI $request_uri';
 		"${ctx}/fastcgi_param_DOCUMENT_URI":
 			param => "fastcgi_param",
-			value => '$document_uri';
+			value => 'DOCUMENT_URI $document_uri';
 		"${ctx}/fastcgi_param_DOCUMENT_ROOT":
 			param => "fastcgi_param",
-			value => '$document_root';
+			value => 'DOCUMENT_ROOT $document_root';
 		"${ctx}/fastcgi_param_SERVER_PROTOCOL":
 			param => "fastcgi_param",
-			value => '$server_protocol';
+			value => 'SERVER_PROTOCOL $server_protocol';
 		"${ctx}/fastcgi_param_GATEWAY_INTERFACE":
 			param => "fastcgi_param",
-			value => 'CGI/1.1';
+			value => 'GATEWAY_INTERFACE CGI/1.1';
 		"${ctx}/fastcgi_param_SERVER_SOFTWARE":
 			param => "fastcgi_param",
-			value => 'nginx/$nginx_version';
+			value => 'SERVER_SOFTWARE nginx/$nginx_version';
 		"${ctx}/fastcgi_param_REMOTE_ADDR":
 			param => "fastcgi_param",
-			value => '$remote_addr';
+			value => 'REMOTE_ADDR $remote_addr';
 		"${ctx}/fastcgi_param_REMOTE_PORT":
 			param => "fastcgi_param",
-			value => '$remote_port';
+			value => 'REMOTE_PORT $remote_port';
 		"${ctx}/fastcgi_param_SERVER_ADDR":
 			param => "fastcgi_param",
-			value => '$server_addr';
+			value => 'SERVER_ADDR $server_addr';
 		"${ctx}/fastcgi_param_SERVER_PORT":
 			param => "fastcgi_param",
-			value => '$server_port';
+			value => 'SERVER_PORT $server_port';
 		"${ctx}/fastcgi_param_SERVER_NAME":
 			param => "fastcgi_param",
-			value => '$server_name';
+			value => 'SERVER_NAME $server_name';
 		"${ctx}/fastcgi_param_HTTPS":
 			param => "fastcgi_param",
-			value => '$https';
+			value => 'HTTPS $https';
 		"${ctx}/fastcgi_param_REDIRECT_STATUS":
 			param => "fastcgi_param",
-			value => '200';
+			value => 'REDIRECT_STATUS 200';
 		"${ctx}/fastcgi_pass":
 			value => $target;
 	}

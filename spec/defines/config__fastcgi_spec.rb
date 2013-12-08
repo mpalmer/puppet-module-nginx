@@ -65,7 +65,7 @@ describe "nginx::config::fastcgi" do
 				expect(subject).
 				  to contain_nginx__config__parameter("http/site_example/location_root/fastcgi_param_#{k}").
 				  with_param("fastcgi_param").
-				  with_value(v)
+				  with_value("#{k} #{v}")
 			end
 		end
 		
