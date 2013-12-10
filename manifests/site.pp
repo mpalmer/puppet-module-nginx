@@ -39,7 +39,12 @@
 #  * `user` (string; optional; default `"root"`)
 #
 #     This tells Puppet to configure the site to be manageable by the
-#     specified user.
+#     specified user.  Amongst other things, the `base_dir` and `logs`
+#     directories will be owned by this user.
+#
+#  * `group` (string; optional; default `"root"`)
+#
+#     As per the `user` attribute, but for the group rather than the user.
 #
 #  * `server_name` (string; required)
 #
@@ -96,6 +101,7 @@
 define nginx::site(
 	$base_dir,
 	$user         = "root",
+	$group        = "root",
 	$server_name,
 	$alt_names    = [],
 	$default      = false,
@@ -169,7 +175,7 @@ define nginx::site(
 			ensure  => directory,
 			mode    => 0755,
 			owner   => $user,
-			group   => "root",
+			group   => $group,
 			before  => Noop["nginx/configured"];
 		"/etc/logrotate.d/nginx-${name}":
 			ensure  => file,

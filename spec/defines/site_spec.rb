@@ -315,13 +315,15 @@ describe "nginx::site" do
 	context "with custom user" do
 		let(:params) { { :base_dir    => "/home/rspec/sites/rspec",
 		                 :server_name => "rspec.example.com",
-		                 :user        => "fred"
+		                 :user        => "fred",
+		                 :group       => "fred"
 		             } }
 		
 		it "makes .../logs owned by fred" do
 			expect(subject).
 			  to contain_file("/home/rspec/sites/rspec/logs").
-			  with_owner("fred")
+			  with_owner("fred").
+			  with_group("fred")
 		end
 		
 		it "makes the logfiles owned by fred" do
