@@ -177,13 +177,17 @@ define nginx::site(
 			owner   => $user,
 			group   => $group,
 			before  => Noop["nginx/configured"];
-		"/etc/logrotate.d/nginx-${name}":
-			ensure  => file,
-			content => template("nginx/etc/logrotate.d/nginx-site"),
-			mode    => 0444,
-			owner   => "root",
-			group   => "root",
-			before  => Noop["nginx/configured"];
+	}
+	
+	if defined("logrotate::rule") {
+		logrotate::rule { "nginx-${name}":
+			logs              => "${base_dir}/logs/*.log",
+			keep              => 90,
+			compress          => "delayed",
+			create            => "0640 ${user} root",
+			sharedscripts     => true,
+			postrotate_script => "[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`";
+		}
 	}
 	
 	nginx::config::parameter {

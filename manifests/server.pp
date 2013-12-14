@@ -87,9 +87,22 @@ define nginx::server (
 			group   => "root",
 			mode    => 0755,
 			before  => Noop["nginx/configured"];
-		"/etc/logrotate.d/nginx":
-			source => "puppet:///modules/nginx/etc/logrotate.d/nginx",
-			mode   => 0444;
+	}
+	
+	if defined("logrotate::rule") {
+		logrotate::rule { "nginx":
+			logs              => ["/var/log/nginx/*.log",
+			                      "/var/log/nginx/*_log",
+			                      "/var/log/nginx/error_logs/*.log",
+			                      "/var/log/nginx/error_logs/*_log",
+			                      "/var/log/nginx/access_logs/*.log",
+			                      "/var/log/nginx/access_logs/*_log"],
+			keep              => 30,
+			compress          => "delayed",
+			create            => "0640 root adm",
+			sharedscripts     => true,
+			postrotate_script => "[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`";
+		}
 	}
 
 	# Common config groups that ordinarily go in the base config file
