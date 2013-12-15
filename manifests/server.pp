@@ -142,5 +142,7 @@ define nginx::server (
 		"http/include_mime_types":
 			param => "include",
 			value => "/etc/nginx/mime.types";
+		"http/types_hash_max_size":
+			value => "2048";
 	}
 }
