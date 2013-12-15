@@ -139,10 +139,16 @@ define nginx::server (
 			value => "256m";
 		"http/client_body_buffer_size":
 			value => "128k";
-		"http/include_mime_types":
-			param => "include",
-			value => "/etc/nginx/mime.types";
 		"http/types_hash_max_size":
 			value => "2048";
+	}
+	
+	# Kinda cheating, but wotevs
+	file { "/etc/nginx/nginx.conf.d/http/mime_types.conf":
+		ensure => file,
+		source => "puppet:///modules/nginx/etc/nginx/nginx.conf.d/mime.types",
+		mode   => 0444,
+		owner  => "root",
+		group  => "root";
 	}
 }
