@@ -35,6 +35,6 @@ define nginx::gzip(
 		"${ctx}/gzip_disable":
 			value => "\"MSIE [1-6]\\.\"";
 		"${ctx}/default_type":
-			value => "text/html";
+			value => "application/octet-stream";
 	}
 }
