@@ -73,18 +73,6 @@ describe "nginx::site" do
 			  with_value("/home/rspec/sites/rspec/logs/access.log combined")
 		end
 		
-		it "rotates the logs" do
-			expect(subject).
-			  to contain_file("/etc/logrotate.d/nginx-rspec").
-			  with_ensure("file").
-			  with_content(/THIS FILE IS AUTOMATICALLY DISTRIBUTED BY PUPPET/).
-			  with_content(%r{^\s*/home/rspec/sites/rspec/logs/\*.log\s+\{$}).
-			  with_content(%r{^\s*daily$}).
-			  with_content(%r{^\s*rotate 90$}).
-			  with_content(%r{^\s*delaycompress$}).
-			  with_content(%r{^\s*create 640 root root$})
-		end
-		
 		it "listens on port 80" do
 			expect(subject).
 			  to contain_nginx__config__parameter("http/site_rspec/listen").
