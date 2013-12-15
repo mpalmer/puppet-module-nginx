@@ -139,5 +139,8 @@ define nginx::server (
 			value => "256m";
 		"http/client_body_buffer_size":
 			value => "128k";
+		"http/include_mime_types":
+			param => "include",
+			value => "/etc/nginx/mime.types";
 	}
 }
