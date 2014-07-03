@@ -252,8 +252,6 @@ define nginx::site(
 		}
 		
 		if !empty($alt_names) {
-			$alt_names_array = maybe_split($alt_names, "\s+")
-		
 			nginx::config::parameter {
 				"http/site_sslredir_${name}/server_alt_names":
 					param => "server_name",
