@@ -260,7 +260,7 @@ define nginx::site(
 		}
 		
 		nginx::config::rewrite {
-			"http/site_sslredir_rspec/ssl_redirect":
+			"http/site_sslredir_${name}/ssl_redirect":
 				from      => '^(.*)$',
 				to        => "https://${server_name}\$1",
 				site      => "sslredir_${name}",
