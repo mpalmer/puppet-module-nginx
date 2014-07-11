@@ -18,6 +18,8 @@
 #    set `ssl_redirect` (as well as `ssl_cert`, `ssl_key`, and optionally
 #    `ssl_ip`) and we'll configure a separate vhost that responds to HTTP
 #    requests with a 301 permanent redirect to the equivalent HTTPS URL.
+#    You can then also specify `hsts => true` (or `hsts => <max_age>`) to
+#    enable HTTP Strict Transport Security for the HTTPS side of the site.
 #
 # The full set of available configuration attributes are:
 #
@@ -98,18 +100,36 @@
 #     Whether or not this site is the default for HTTPS requests to this server
 #     (or at least to the IP address specified in `ssl_ip`, if set).
 #
+#  * `hsts` (boolean or integer; optional; default `false`)
+#
+#     Useful only when `ssl_redirect` is `true`, setting this to `true` will
+#     cause the HTTPS site configured by this resource to have RFC6797 HTTP
+#     Strict Transport Security headers added to all responses, with a
+#     `max_age` of 1 year.  If you wish to vary the `max_age` returned in
+#     all responses, you can set `hsts` to a positive integer value,
+#     representing the number of seconds that browsers should honour the
+#     HSTS header.
+#
+#  * `hsts_include_subdomains (boolean; optional; default `true`)
+#
+#     Can be used to disable the `IncludeSubdomains` flag to the
+#     `Strict-Transport-Security` HTTP response header.  Only of use if
+#     `$hsts` is set to `true` or an integer.
+#
 define nginx::site(
 	$base_dir,
-	$user         = "root",
-	$group        = "root",
+	$user                    = "root",
+	$group                   = "root",
 	$server_name,
-	$alt_names    = [],
-	$default      = false,
-	$ssl_cert     = undef,
-	$ssl_key      = undef,
-	$ssl_ip       = undef,
-	$ssl_redirect = false,
-	$ssl_default  = false
+	$alt_names               = [],
+	$default                 = false,
+	$ssl_cert                = undef,
+	$ssl_key                 = undef,
+	$ssl_ip                  = undef,
+	$ssl_redirect            = false,
+	$ssl_default             = false,
+	$hsts                    = false,
+	$hsts_include_subdomains = true
 ) {
 	# Template variables
 	$nginx_site_base_dir = $base_dir
@@ -119,22 +139,26 @@ define nginx::site(
 	nginx::config::group { $ctx:
 		context => "server";
 	}
-	
+
 	if $default {
 		$default_opt = " default"
 	} else {
 		$default_opt = ""
 	}
-	
+
 	if $ssl_default {
 		$ssl_default_opt = " default"
 	} else {
 		$ssl_default_opt = ""
 	}
-	
+
+	if $hsts and !$ssl_redirect {
+		fail("HSTS is only supported when ssl_redirect => true")
+	}
+
 	##########################################################################
 	# A vhost by any other name would not serve traffic...
-	
+
 	nginx::config::parameter {
 		"${ctx}/server_name":
 			value => $server_name;
@@ -147,14 +171,14 @@ define nginx::site(
 		# will get mighty pissy if it doesn't get an array, so let's use the magic
 		# of maybe_split to help us out
 		$alt_names_array = maybe_split($alt_names, "\s+")
-		
+
 		nginx::config::parameter {
 			"${ctx}/server_alt_names":
 				param => "server_name",
 				value => join($alt_names_array, " ");
 		}
 	}
-	
+
 	if !$ssl_redirect {
 		nginx::config::parameter {
 			"${ctx}/listen":
@@ -178,7 +202,7 @@ define nginx::site(
 			group   => $group,
 			before  => Noop["nginx/configured"];
 	}
-	
+
 	if defined("logrotate::rule") {
 		logrotate::rule { "nginx-${name}":
 			logs              => "${base_dir}/logs/*.log",
@@ -189,21 +213,21 @@ define nginx::site(
 			postrotate_script => "[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`";
 		}
 	}
-	
+
 	nginx::config::parameter {
 		"${ctx}/access_log":
 			value => "${base_dir}/logs/access.log combined";
 		"${ctx}/error_log":
 			value => "${base_dir}/logs/error.log info";
 	}
-	
+
 	##########################################################################
 	# Oh SSL
-	
+
 	if ($ssl_cert and !$ssl_key) or ($ssl_key and !$ssl_cert) {
 		fail("Must specify both ssl_cert and ssl_key in Nginx::Site[${name}]")
 	}
-	
+
 	if $ssl_ip and !$ssl_key {
 		fail("Must specify ssl_cert and ssl_key in Nginx::Site[${name}] when ssl_ip is set")
 	}
@@ -225,7 +249,7 @@ define nginx::site(
 
 	##########################################################################
 	# Create a separate HTTP vhost to redirect to HTTPS if requested
-	
+
 	if $ssl_redirect {
 		if !$ssl_cert or !$ssl_key {
 			fail("Must pass ssl_cert and ssl_key to Nginx::Site[${name}] when ssl_redirect => true")
@@ -234,7 +258,7 @@ define nginx::site(
 		nginx::config::group { "http/site_sslredir_${name}":
 			context => "server"
 		}
-			
+
 		nginx::config::parameter {
 			"http/site_sslredir_${name}/listen":
 				value => $ssl_ip ? {
@@ -250,7 +274,7 @@ define nginx::site(
 			"http/site_sslredir_${name}/root":
 				value => "/usr/share/empty";
 		}
-		
+
 		if !empty($alt_names) {
 			nginx::config::parameter {
 				"http/site_sslredir_${name}/server_alt_names":
@@ -258,13 +282,32 @@ define nginx::site(
 					value => join($alt_names_array, " ");
 			}
 		}
-		
+
 		nginx::config::rewrite {
 			"http/site_sslredir_${name}/ssl_redirect":
 				from      => '^(.*)$',
 				to        => "https://${server_name}\$1",
 				site      => "sslredir_${name}",
 				permanent => true;
+		}
+
+		if $hsts {
+			if $hsts =~ /^\d+$/ {
+				$hsts_max_age = $hsts
+			} else {
+				$hsts_max_age = 31622400  # One year (or, more precisely,
+				                          # 366 days, ignoring leap seconds)
+			}
+
+			if $hsts_include_subdomains {
+				$hsts_inc_subs = "; includeSubDomains"
+			} else {
+				$hsts_inc_subs = ""
+			}
+
+			nginx::config { "http/site_${name}/add_header_hsts":
+				content => "add_header \"Strict-Transport-Security max_age=${hsts_max_age}${hsts_inc_subs}\";"
+			}
 		}
 	}
 }
