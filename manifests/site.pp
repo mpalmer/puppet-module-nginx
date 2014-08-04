@@ -208,7 +208,7 @@ define nginx::site(
 			logs              => "${base_dir}/logs/*.log",
 			keep              => 90,
 			compress          => "delayed",
-			create            => "0640 ${user} root",
+			create            => "0640",
 			sharedscripts     => true,
 			postrotate_script => "[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`";
 		}
