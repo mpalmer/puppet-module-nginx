@@ -23,6 +23,7 @@ define nginx::server (
 			group   => "root",
 			recurse => true,
 			purge   => true,
+			force   => true,
 			require => Noop["nginx/installed"],
 			before  => Noop["nginx/configured"];
 		"/etc/nginx/nginx.conf.d/README":
