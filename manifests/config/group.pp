@@ -80,7 +80,8 @@ define nginx::config::group(
 		owner   => "root",
 		group   => "root",
 		purge   => true,
-		recurse => true
+		recurse => true,
+		force   => true,
 	}
 
 	# Template variables
