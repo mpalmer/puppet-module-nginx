@@ -76,7 +76,7 @@ describe "nginx::site" do
 		it "listens on port 80" do
 			expect(subject).
 			  to contain_nginx__config__parameter("http/site_rspec/listen").
-			  with_value("80")
+			  with_value("[::]:80 ipv6only=off")
 		end
 
 		it "sets the rootdir" do
@@ -157,7 +157,7 @@ describe "nginx::site" do
 		it "listens on port 80 in the sslredir server config" do
 			expect(subject).
 			  to contain_nginx__config__parameter("http/site_sslredir_rspec/listen").
-			  with_value("80")
+			  with_value("[::]:80 ipv6only=off")
 		end
 
 		it "doesn't listen on port 80 in the main vhost" do
@@ -307,7 +307,7 @@ describe "nginx::site" do
 			expect(subject).
 			  to contain_nginx__config__parameter("http/site_rspec/listen_ssl").
 			  with_param("listen").
-			  with_value("443 ssl")
+			  with_value("[::]:443 ipv6only=off ssl")
 		end
 
 		it "configures the SSL cert" do
@@ -348,7 +348,7 @@ describe "nginx::site" do
 		it "listens on port 80 default" do
 			expect(subject).
 			  to contain_nginx__config__parameter("http/site_rspec/listen").
-			  with_value("80 default")
+			  with_value("[::]:80 ipv6only=off default")
 		end
 	end
 
@@ -364,7 +364,7 @@ describe "nginx::site" do
 			expect(subject).
 			  to contain_nginx__config__parameter("http/site_rspec/listen_ssl").
 			  with_param("listen").
-			  with_value("443 ssl default")
+			  with_value("[::]:443 ipv6only=off ssl default")
 		end
 	end
 

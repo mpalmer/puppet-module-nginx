@@ -183,7 +183,7 @@ define nginx::site(
 		nginx::config::parameter {
 			"${ctx}/listen":
 				value => $ssl_ip ? {
-					undef   => "80${default_opt}",
+					undef   => "[::]:80 ipv6only=off ${default_opt}",
 					default => "${ssl_ip}:80${default_opt}"
 				};
 		}
@@ -241,7 +241,7 @@ define nginx::site(
 			"${ctx}/listen_ssl":
 				param => "listen",
 				value => $ssl_ip ? {
-					undef   => "443 ssl${ssl_default_opt}",
+					undef   => "[::]:443 ipv6only=off ssl${ssl_default_opt}",
 					default => "${ssl_ip}:443 ssl${ssl_default_opt}"
 				};
 		}
@@ -262,7 +262,7 @@ define nginx::site(
 		nginx::config::parameter {
 			"http/site_sslredir_${name}/listen":
 				value => $ssl_ip ? {
-					undef   => "80",
+					undef   => "[::]:80 ipv6only=off",
 					default => "${ssl_ip}:80"
 				};
 			"http/site_sslredir_${name}/access_log":
