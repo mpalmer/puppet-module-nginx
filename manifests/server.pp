@@ -85,8 +85,8 @@ define nginx::server (
 		"/var/log/nginx":
 			ensure  => directory,
 			owner   => "root",
-			group   => "root",
-			mode    => 0755,
+			group   => "adm",
+			mode    => 0750,
 			before  => Noop["nginx/configured"];
 	}
 	
