@@ -30,6 +30,9 @@ define nginx::http_proxy(
 		"http/site_${site}/location_${location}/proxy_set_header_x_real_ip":
 			param => "proxy_set_header",
 			value => "X-Real-IP \$remote_addr";
+		"http/site_${site}/location_${location}/proxy_set_header_x_forwarded_proto":
+			param => "proxy_set_header",
+			value => "X-Forwarded-Proto \$scheme";
 		"http/site_${site}/location_${location}/proxy_read_timeout":
 			value => "600";
 		"http/site_${site}/location_${location}/proxy_send_timeout":
