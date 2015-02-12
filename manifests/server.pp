@@ -142,6 +142,8 @@ define nginx::server (
 			value => "128k";
 		"http/types_hash_max_size":
 			value => "2048";
+		"http/server_names_hash_bucket_size":
+			value => "64";
 	}
 	
 	# Kinda cheating, but wotevs
