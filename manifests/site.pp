@@ -116,6 +116,10 @@
 #     `Strict-Transport-Security` HTTP response header.  Only of use if
 #     `$hsts` is set to `true` or an integer.
 #
+#  * `log_permissions (string; optional; default `"0640"`)
+#
+#     This is the permissions on the log files created for this nginx site.
+#
 define nginx::site(
 	$base_dir,
 	$user                    = "root",
@@ -129,7 +133,8 @@ define nginx::site(
 	$ssl_redirect            = false,
 	$ssl_default             = false,
 	$hsts                    = false,
-	$hsts_include_subdomains = true
+	$hsts_include_subdomains = true,
+	$log_permissions         = "0640"
 ) {
 	# Template variables
 	$nginx_site_base_dir = $base_dir
@@ -208,7 +213,7 @@ define nginx::site(
 			logs              => "${base_dir}/logs/*.log",
 			keep              => 90,
 			compress          => "delayed",
-			create            => "0640",
+			create            => $log_permissions,
 			sharedscripts     => true,
 			postrotate_script => "[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`";
 		}
