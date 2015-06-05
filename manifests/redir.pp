@@ -59,6 +59,7 @@
 #
 define nginx::redir(
 	$server_names,
+	$target,
 	$default                 = false,
 	$ssl_cert                = undef,
 	$ssl_key                 = undef,
