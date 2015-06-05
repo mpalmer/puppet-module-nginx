@@ -46,7 +46,7 @@
 #     Internet Explorer on Windows XP), then you'll need to set this to an
 #     IP address for every SSL-enabled vhost you configure.
 #
-define nginx::site(
+define nginx::site::proxy(
 	$server_names,
 	$destination,
 	$ssl_cert                = undef,
