@@ -57,7 +57,7 @@
 #     Whether or not this site is the default for HTTPS requests to this server
 #     (or at least to the IP address specified in `ssl_ip`, if set).
 #
-define nginx::redir(
+define nginx::site::redir(
 	$server_names,
 	$target,
 	$default                 = false,
