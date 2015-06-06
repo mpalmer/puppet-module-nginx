@@ -24,6 +24,16 @@
 #     unconditionally; if you want to maintain the same protocol, you can
 #     specify `'$scheme://...'` as the URL.
 #
+#  * `default` (boolean; optional; default `false`)
+#
+#     Whether you want this site to be the default for the given `ssl_ip`
+#     (or the `*_ANY` address) on port 80.
+#
+#  * `ssl_default` (boolean; optional; default `false`)
+#
+#     Whether you want this site to be the default for the given `ssl_ip`
+#     (or the `*_ANY` address) on port 443.
+#
 #  * `ssl_cert` (string; optional; default `undef`)
 #
 #     If set to a non-`undef` value, this attribute is interpreted as
@@ -49,15 +59,29 @@
 define nginx::site::proxy(
 	$server_names,
 	$destination,
-	$ssl_cert                = undef,
-	$ssl_key                 = undef,
-	$ssl_ip                  = undef,
+	$default      = false,
+	$ssl_default  = false,
+	$ssl_cert     = undef,
+	$ssl_key      = undef,
+	$ssl_ip       = undef,
 ) {
 	# Where we stick all our config goodies
 	$ctx = "http/site_${name}"
 
 	nginx::config::group { $ctx:
 		context => "server";
+	}
+
+	if $default {
+		$default_opt = " default ipv6only=off"
+	} else {
+		$default_opt = ""
+	}
+
+	if $ssl_default {
+		$ssl_default_opt = " default ipv6only=off"
+	} else {
+		$ssl_default_opt = ""
 	}
 
 	##########################################################################
@@ -75,8 +99,8 @@ define nginx::site::proxy(
 	nginx::config::parameter {
 		"${ctx}/listen":
 			value => $ssl_ip ? {
-				undef   => "[::]:80",
-				default => "${ssl_ip}:80"
+				undef   => "[::]:80${default_opt}",
+				default => "${ssl_ip}:80${default_opt}"
 			};
 	}
 
@@ -107,8 +131,8 @@ define nginx::site::proxy(
 			"${ctx}/listen_ssl":
 				param => "listen",
 				value => $ssl_ip ? {
-					undef   => "[::]:443 ssl",
-					default => "${ssl_ip}:443 ssl"
+					undef   => "[::]:443 ssl${ssl_default_opt}",
+					default => "${ssl_ip}:443 ssl${ssl_default_opt}"
 				};
 		}
 	}
