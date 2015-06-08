@@ -40,10 +40,19 @@
 #       IPv6 literal enclosed in square brackets, or a name which is
 #       resolvable to and IPv4 or IPv6 address.
 #
+#  * `captured_path` (boolean; optional; default `false`)
+#
+#     If set to `true`, then the location in which this configuration
+#     appears has a regexp which captures the filename to process, relative
+#     to `$document_root`.  This is required in certain odd-ball
+#     circumstances, where `$request_filename` does not contain the
+#     filename, as you'd think it would.
+#
 define nginx::config::fastcgi(
 	$site,
 	$location,
-	$target
+	$target,
+	$captured_path = false,
 ) {
 	$ctx = "http/site_${site}/location_${location}"
 	
@@ -62,7 +71,10 @@ define nginx::config::fastcgi(
 			value => 'CONTENT_LENGTH $content_length';
 		"${ctx}/fastcgi_param_SCRIPT_FILENAME":
 			param => "fastcgi_param",
-			value => 'SCRIPT_FILENAME $request_filename';
+			value => $captured_path ? {
+				false => 'SCRIPT_FILENAME $request_filename',
+				true  => 'SCRIPT_FILENAME $document_root$1',
+			};
 		"${ctx}/fastcgi_param_SCRIPT_NAME":
 			param => "fastcgi_param",
 			value => 'SCRIPT_NAME $fastcgi_script_name';
