@@ -29,6 +29,8 @@ define nginx::ssl::hardened(
 	} else {
 		$ctx = "http"
 	}
+
+	include nginx::ssl::dhparams
 	
 	nginx::config::parameter {
 		"${ctx}/ssl_ciphers":
@@ -37,5 +39,9 @@ define nginx::ssl::hardened(
 			value => "on";
 		"${ctx}/ssl_protocols":
 			value => "TLSv1 TLSv1.1 TLSv1.2";
+		"${ctx}/ssl_dhparam":
+			value => "/etc/nginx/dhparams";
+		"${ctx}/ssl_session_cache":
+			value => "shared:SSL_${ctx}:10m";
 	}
 }
