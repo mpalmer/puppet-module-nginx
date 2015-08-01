@@ -311,7 +311,7 @@ define nginx::site(
 			}
 
 			nginx::config { "http/site_${name}/add_header_hsts":
-				content => "add_header Strict-Transport-Security \"max_age=${hsts_max_age}${hsts_inc_subs}\";"
+				content => "add_header Strict-Transport-Security \"max-age=${hsts_max_age}${hsts_inc_subs}\";"
 			}
 		}
 	}

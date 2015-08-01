@@ -212,7 +212,7 @@ describe "nginx::site" do
 		it "adds the header to the main site" do
 			expect(subject).
 			  to contain_nginx__config("http/site_rspec/add_header_hsts").
-			  with_content('add_header "Strict-Transport-Security max_age=31622400; includeSubDomains";')
+			  with_content('add_header "Strict-Transport-Security max-age=31622400; includeSubDomains";')
 		end
 
 		it "doesn't add the header to the redir site" do
@@ -233,7 +233,7 @@ describe "nginx::site" do
 		it "adds the header with custom max_age to the main site" do
 			expect(subject).
 			  to contain_nginx__config("http/site_rspec/add_header_hsts").
-			  with_content('add_header "Strict-Transport-Security max_age=12345; includeSubDomains";')
+			  with_content('add_header "Strict-Transport-Security max-age=12345; includeSubDomains";')
 		end
 	end
 
@@ -250,7 +250,7 @@ describe "nginx::site" do
 		it "adds the header, sans includeSubDomains, to the main site" do
 			expect(subject).
 			  to contain_nginx__config("http/site_rspec/add_header_hsts").
-			  with_content('add_header "Strict-Transport-Security max_age=31622400";')
+			  with_content('add_header "Strict-Transport-Security max-age=31622400";')
 		end
 	end
 
