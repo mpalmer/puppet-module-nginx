@@ -24,8 +24,8 @@
 #
 #     The name of the location in the site to place the proxy configuration. 
 #     This should be the part after the last forward slash namevar of an
-#     `nginx::location` resource which has been defined as being a part of
-#     the site named in the `site` attribute.
+#     `nginx::site::location` resource which has been defined as being a
+#     part of the site named in the `site` attribute.
 #
 #  * `target` (string; required)
 #
