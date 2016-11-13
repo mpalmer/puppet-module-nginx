@@ -56,6 +56,12 @@
 #     Internet Explorer on Windows XP), then you'll need to set this to an
 #     IP address for every SSL-enabled vhost you configure.
 #
+#  * `letsencrypt` (boolean; optional, default `false`)
+#
+#     An alternative to the `ssl_cert` / `ssl_key` parameters, that causes a
+#     Let's Encrypt certificate to be issued (and used) for the
+#     `server_names` given if set to `true`.
+#
 define nginx::site::proxy(
 	$server_names,
 	$destination,
@@ -64,6 +70,7 @@ define nginx::site::proxy(
 	$ssl_cert     = undef,
 	$ssl_key      = undef,
 	$ssl_ip       = undef,
+	$letsencrypt  = false,
 ) {
 	# Where we stick all our config goodies
 	$ctx = "http/site_${name}"
@@ -112,22 +119,47 @@ define nginx::site::proxy(
 	}
 
 	##########################################################################
-	# Oh SSL
+	# Oh SSL, u so lulzy
 
 	if ($ssl_cert and !$ssl_key) or ($ssl_key and !$ssl_cert) {
 		fail("Must specify both ssl_cert and ssl_key in Nginx::Site[${name}]")
 	}
 
-	if $ssl_ip and !$ssl_key {
-		fail("Must specify ssl_cert and ssl_key in Nginx::Site[${name}] when ssl_ip is set")
+	if $ssl_ip and !($ssl_key or $letsencrypt) {
+		fail("Must specify ssl_cert/ssl_key or enable letsencrypt in Nginx::Site[${name}] when ssl_ip is set")
 	}
 
-	if $ssl_cert and $ssl_key {
+	if $ssl_key {
 		nginx::config::parameter {
 			"${ctx}/ssl_certificate":
 				value => $ssl_cert;
 			"${ctx}/ssl_certificate_key":
 				value => $ssl_key;
+		}
+	}
+
+	if $letsencrypt {
+		nginx::site::location { "${name}/acme-challenge":
+			site => $name,
+			path => "/.well-known/acme-challenge"
+		}
+
+		nginx::config::parameter {
+			"${ctx}/location_acme-challenge/alias":
+				value => "/var/lib/letsencrypt/acme-challenge";
+			"${ctx}/ssl_certificate":
+				value => "/var/lib/letsencrypt/certs/${name}.pem";
+			"${ctx}/ssl_certificate_key":
+				value => "/var/lib/letsencrypt/keys/${name}.pem";
+		}
+
+		letsencrypt::certificate { $name:
+			names => $names_array,
+		}
+	}
+
+	if $ssl_key or $letsencrypt {
+		nginx::config::parameter {
 			"${ctx}/listen_ssl":
 				param => "listen",
 				value => $ssl_ip ? {

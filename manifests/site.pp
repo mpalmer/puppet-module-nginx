@@ -10,16 +10,24 @@
 # patterns" that are currently supported are:
 #
 #  * **SSL-enabled vhost**: If you want to serve the same content and
-#    configuration over both HTTP and HTTPS for the same set of names, you
-#    can simply set `ssl_cert` and `ssl_key` (and optionally `ssl_ip`) to
-#    get a vhost that will serve both protocols simultaneously.
+#    configuration over both HTTP and HTTPS for the same set of names using
+#    an SSL certificate and key obtained manually, you can simply set
+#    `ssl_cert` and `ssl_key` (and optionally `ssl_ip`) to get a vhost that
+#    will serve both protocols simultaneously.
+#
+#  * **Let's Encrypt-enabled vhost**: Simply set `letsencrypt => true` in
+#    the site definition and a certificate for the `server_names` will be
+#    requested, and on-going renewals automatically handled.  You *must not*
+#    also set `ssl_cert` and `ssl_key`, however `ssl_ip` and `ssl_redirect`
+#    are still OK to set as you please.
 #
 #  * **Redirect to SSL**: If you want a particular site to be "SSL only",
-#    set `ssl_redirect` (as well as `ssl_cert`, `ssl_key`, and optionally
-#    `ssl_ip`) and we'll configure a separate vhost that responds to HTTP
-#    requests with a 301 permanent redirect to the equivalent HTTPS URL.
-#    You can then also specify `hsts => true` (or `hsts => <max_age>`) to
-#    enable HTTP Strict Transport Security for the HTTPS side of the site.
+#    set `ssl_redirect` (as well as either `ssl_cert` / `ssl_key` or
+#    `letsencrypt`, and optionally `ssl_ip`) and we'll configure a separate
+#    vhost that responds to HTTP requests with a 301 permanent redirect to
+#    the equivalent HTTPS URL.  You can then also specify `hsts => true` (or
+#    `hsts => <max_age>`) to enable HTTP Strict Transport Security for the
+#    HTTPS side of the site.
 #
 # The full set of available configuration attributes are:
 #
@@ -81,6 +89,12 @@
 #     be served for SSL requests.  If this attribute is specified, then the
 #     `ssl_cert` attribute must also be set.
 #
+#  * `letsencrypt` (boolean; optional, default `false`)
+#
+#     An alternative to the `ssl_cert` / `ssl_key` parameters, that causes a
+#     Let's Encrypt certificate to be issued (and used for SSL) for all
+#     names of the site if set to `true`.
+#
 #  * `ssl_ip` (string; optional; default `undef`)
 #
 #     Instruct nginx to listen for SSL connections on a single, specified IP
@@ -129,6 +143,7 @@ define nginx::site(
 	$default                 = false,
 	$ssl_cert                = undef,
 	$ssl_key                 = undef,
+	$letsencrypt             = false,
 	$ssl_ip                  = undef,
 	$ssl_redirect            = false,
 	$ssl_default             = false,
@@ -182,6 +197,8 @@ define nginx::site(
 				param => "server_name",
 				value => join($alt_names_array, " ");
 		}
+	} else {
+		$alt_names_array = []
 	}
 
 	if !$ssl_redirect {
@@ -227,7 +244,7 @@ define nginx::site(
 	}
 
 	##########################################################################
-	# Oh SSL
+	# Oh SSL, u so lulzy
 
 	if ($ssl_cert and !$ssl_key) or ($ssl_key and !$ssl_cert) {
 		fail("Must specify both ssl_cert and ssl_key in Nginx::Site[${name}]")
@@ -237,12 +254,39 @@ define nginx::site(
 		fail("Must specify ssl_cert and ssl_key in Nginx::Site[${name}] when ssl_ip is set")
 	}
 
-	if $ssl_cert and $ssl_key {
+	if $ssl_key {
 		nginx::config::parameter {
 			"${ctx}/ssl_certificate":
 				value => $ssl_cert;
 			"${ctx}/ssl_certificate_key":
 				value => $ssl_key;
+		}
+	}
+
+	if $letsencrypt {
+		nginx::site::location { "${name}/acme-challenge":
+			site => $name,
+			path => "/.well-known/acme-challenge"
+		}
+
+		nginx::config::parameter {
+			"${ctx}/location_acme-challenge/alias":
+				value => "/var/lib/letsencrypt/acme-challenge";
+			"${ctx}/ssl_certificate":
+				value => "/var/lib/letsencrypt/certs/${server_name}.pem";
+			"${ctx}/ssl_certificate_key":
+				value => "/var/lib/letsencrypt/keys/${server_name}.pem";
+		}
+
+		$names_array = concat([$server_name], $alt_names_array)
+
+		letsencrypt::certificate { $name:
+			names => $names_array,
+		}
+	}
+
+	if $ssl_key or $letsencrypt {
+		nginx::config::parameter {
 			"${ctx}/listen_ssl":
 				param => "listen",
 				value => $ssl_ip ? {
