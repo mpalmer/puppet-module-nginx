@@ -264,24 +264,9 @@ define nginx::site(
 	}
 
 	if $letsencrypt {
-		nginx::site::location { "${name}/acme-challenge":
-			site => $name,
-			path => "/.well-known/acme-challenge"
-		}
-
-		nginx::config::parameter {
-			"${ctx}/location_acme-challenge/alias":
-				value => "/var/lib/letsencrypt/acme-challenge";
-			"${ctx}/ssl_certificate":
-				value => "/var/lib/letsencrypt/certs/${server_name}.pem";
-			"${ctx}/ssl_certificate_key":
-				value => "/var/lib/letsencrypt/keys/${server_name}.pem";
-		}
-
-		$names_array = concat([$server_name], $alt_names_array)
-
-		letsencrypt::certificate { $name:
-			names => $names_array,
+		nginx::letsencrypt { $name:
+			ctx         => $ctx,
+			names_array => $names_array,
 		}
 	}
 

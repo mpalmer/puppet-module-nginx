@@ -139,22 +139,9 @@ define nginx::site::proxy(
 	}
 
 	if $letsencrypt {
-		nginx::site::location { "${name}/acme-challenge":
-			site => $name,
-			path => "/.well-known/acme-challenge"
-		}
-
-		nginx::config::parameter {
-			"${ctx}/location_acme-challenge/alias":
-				value => "/var/lib/letsencrypt/acme-challenge";
-			"${ctx}/ssl_certificate":
-				value => "/var/lib/letsencrypt/certs/${name}.pem";
-			"${ctx}/ssl_certificate_key":
-				value => "/var/lib/letsencrypt/keys/${name}.pem";
-		}
-
-		letsencrypt::certificate { $name:
-			names => $names_array,
+		nginx::letsencrypt { $name:
+			ctx         => $ctx,
+			names_array => $names_array,
 		}
 	}
 
