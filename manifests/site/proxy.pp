@@ -56,6 +56,28 @@
 #     Internet Explorer on Windows XP), then you'll need to set this to an
 #     IP address for every SSL-enabled vhost you configure.
 #
+#  * `ssl_redirect` (boolean; optional; default `false`)
+#
+#     If set to true, `nginx::site` will configure a second vhost, listening
+#     for HTTP requests for the vhost's name(s), and unconditionally
+#     redirect all HTTP requests to HTTPS requests to `server_name`.
+#
+#  * `hsts` (boolean or integer; optional; default `false`)
+#
+#     Useful only when `ssl_redirect` is `true`, setting this to `true` will
+#     cause the HTTPS site configured by this resource to have RFC6797 HTTP
+#     Strict Transport Security headers added to all responses, with a
+#     `max_age` of 1 year.  If you wish to vary the `max_age` returned in
+#     all responses, you can set `hsts` to a positive integer value,
+#     representing the number of seconds that browsers should honour the
+#     HSTS header.
+#
+#  * `hsts_include_subdomains (boolean; optional; default `true`)
+#
+#     Can be used to disable the `IncludeSubdomains` flag to the
+#     `Strict-Transport-Security` HTTP response header.  Only of use if
+#     `$hsts` is set to `true` or an integer.
+#
 #  * `letsencrypt` (boolean; optional, default `false`)
 #
 #     An alternative to the `ssl_cert` / `ssl_key` parameters, that causes a
@@ -70,6 +92,9 @@ define nginx::site::proxy(
 	$ssl_cert     = undef,
 	$ssl_key      = undef,
 	$ssl_ip       = undef,
+	$ssl_redirect = false,
+	$ssl_default  = false,
+	$hsts         = false,
 	$letsencrypt  = false,
 ) {
 	# Where we stick all our config goodies
@@ -91,6 +116,10 @@ define nginx::site::proxy(
 		$ssl_default_opt = ""
 	}
 
+	if $hsts and !$ssl_redirect {
+		fail("HSTS is only supported when ssl_redirect => true")
+	}
+
 	##########################################################################
 	# A vhost by any other name would not serve traffic...
 
@@ -103,12 +132,14 @@ define nginx::site::proxy(
 			value => "/usr/share/empty";
 	}
 
-	nginx::config::parameter {
-		"${ctx}/listen":
-			value => $ssl_ip ? {
-				undef   => "[::]:80${default_opt}",
-				default => "${ssl_ip}:80${default_opt}"
-			};
+	if !$ssl_redirect {
+		nginx::config::parameter {
+			"${ctx}/listen":
+				value => $ssl_ip ? {
+					undef   => "[::]:80 ${default_opt}",
+					default => "${ssl_ip}:80${default_opt}"
+				};
+		}
 	}
 
 	nginx::config::parameter {
@@ -153,6 +184,70 @@ define nginx::site::proxy(
 					undef   => "[::]:443 ssl${ssl_default_opt}",
 					default => "${ssl_ip}:443 ssl${ssl_default_opt}"
 				};
+		}
+	}
+
+	##########################################################################
+	# Create a separate HTTP vhost to redirect to HTTPS if requested
+
+	if $ssl_redirect {
+		if !$ssl_key and !$letsencrypt {
+			fail("Must enable SSL on Nginx::Site[${name}] when ssl_redirect => true")
+		}
+
+		nginx::config::group { "http/site_sslredir_${name}":
+			context => "server"
+		}
+
+		nginx::config::parameter {
+			"http/site_sslredir_${name}/listen":
+				value => $ssl_ip ? {
+					undef   => "[::]:80",
+					default => "${ssl_ip}:80"
+				};
+			"http/site_sslredir_${name}/access_log":
+				value => "${base_dir}/logs/access.log combined";
+			"http/site_sslredir_${name}/error_log":
+				value => "${base_dir}/logs/error.log info";
+			"http/site_sslredir_${name}/server_name":
+				value => $server_name;
+			"http/site_sslredir_${name}/root":
+				value => "/usr/share/empty";
+		}
+
+		if !empty($alt_names) {
+			nginx::config::parameter {
+				"http/site_sslredir_${name}/server_alt_names":
+					param => "server_name",
+					value => join($alt_names_array, " ");
+			}
+		}
+
+		nginx::config::rewrite {
+			"http/site_sslredir_${name}/ssl_redirect":
+				from      => '^(.*)$',
+				to        => "https://${server_name}\$1",
+				site      => "sslredir_${name}",
+				permanent => true;
+		}
+
+		if $hsts {
+			if $hsts =~ /^\d+$/ {
+				$hsts_max_age = $hsts
+			} else {
+				$hsts_max_age = 31622400  # One year (or, more precisely,
+				                          # 366 days, ignoring leap seconds)
+			}
+
+			if $hsts_include_subdomains {
+				$hsts_inc_subs = "; includeSubDomains"
+			} else {
+				$hsts_inc_subs = ""
+			}
+
+			nginx::config { "http/site_${name}/add_header_hsts":
+				content => "add_header Strict-Transport-Security \"max-age=${hsts_max_age}${hsts_inc_subs}\";"
+			}
 		}
 	}
 

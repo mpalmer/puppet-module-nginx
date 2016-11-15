@@ -285,8 +285,8 @@ define nginx::site(
 	# Create a separate HTTP vhost to redirect to HTTPS if requested
 
 	if $ssl_redirect {
-		if !$ssl_cert or !$ssl_key {
-			fail("Must pass ssl_cert and ssl_key to Nginx::Site[${name}] when ssl_redirect => true")
+		if !$ssl_key and !$letsencrypt {
+			fail("Must enable SSL on Nginx::Site[${name}] when ssl_redirect => true")
 		}
 
 		nginx::config::group { "http/site_sslredir_${name}":
