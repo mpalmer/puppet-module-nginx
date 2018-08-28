@@ -226,7 +226,7 @@ define nginx::site::proxy(
 		nginx::config::rewrite {
 			"http/site_sslredir_${name}/ssl_redirect":
 				from      => '^(.*)$',
-				to        => "https://${server_name}\$1",
+				to        => "https://\$server_name\$1",
 				site      => "sslredir_${name}",
 				permanent => true;
 		}
