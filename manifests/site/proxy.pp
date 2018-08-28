@@ -206,9 +206,9 @@ define nginx::site::proxy(
 					default => "${ssl_ip}:80"
 				};
 			"http/site_sslredir_${name}/access_log":
-				value => "${base_dir}/logs/access.log combined";
+				value => "/var/log/nginx/${title}_access.log combined";
 			"http/site_sslredir_${name}/error_log":
-				value => "${base_dir}/logs/error.log info";
+				value => "/var/log/nginx/${title}_error.log info";
 			"http/site_sslredir_${name}/server_name":
 				value => join($names_array, " ");
 			"http/site_sslredir_${name}/root":
