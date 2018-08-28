@@ -210,7 +210,7 @@ define nginx::site::proxy(
 			"http/site_sslredir_${name}/error_log":
 				value => "${base_dir}/logs/error.log info";
 			"http/site_sslredir_${name}/server_name":
-				value => $server_name;
+				value => join($names_array, " ");
 			"http/site_sslredir_${name}/root":
 				value => "/usr/share/empty";
 		}
