@@ -223,12 +223,29 @@ define nginx::site::proxy(
 			}
 		}
 
+		nginx::site::location { "sslredir_${name}/root":
+			site => "sslredir_${name}",
+			path => "/",
+		}
+
 		nginx::config::rewrite {
 			"http/site_sslredir_${name}/ssl_redirect":
 				from      => '^(.*)$',
 				to        => "https://\$server_name\$1",
 				site      => "sslredir_${name}",
+				location  => "root",
 				permanent => true;
+		}
+
+		if $letsencrypt {
+			nginx::site::location { "sslredir_${name}/acme-challenge":
+				site => "sslredir_${name}",
+				path => "/.well-known/acme-challenge",
+			}
+
+			nginx::config::parameter { "http/site_sslredir_${title}/location_acme-challenge/alias":
+				value   => "/var/lib/letsencrypt/acme-challenge",
+			}
 		}
 
 		if $hsts {
