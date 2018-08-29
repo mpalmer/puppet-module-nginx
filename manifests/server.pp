@@ -37,7 +37,7 @@ define nginx::server (
 	case $::operatingsystem {
 		"RedHat","CentOS": {
 			$nginx_server_package = "nginx"
-			$nginx_server_reload  = "/sbin/service nginx reload"
+			$nginx_server_reload  = "/usr/sbin/service nginx reload"
 		}
 		"Debian": {
 			if to_i($::operatingsystemrelease) >= 7 {

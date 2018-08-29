@@ -56,7 +56,7 @@ describe "nginx::server" do
 		it "sets up the nginx service" do
 			expect(subject).
 			  to contain_service("nginx").
-			  with_restart("/sbin/service nginx reload")
+			  with_restart("/usr/sbin/service nginx reload")
 		end
 	end
 end

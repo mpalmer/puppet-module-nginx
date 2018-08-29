@@ -7,7 +7,7 @@ define nginx::letsencrypt($ctx, $names_array) {
 	# Can't just notify the nginx service here, because it won't accept
 	# being reloaded multiple times in a single Puppet run
 	exec { "reload nginx for ${name} validation config":
-		command     => "/sbin/service nginx reload",
+		command     => "/usr/sbin/service nginx reload",
 		refreshonly => true,
 	}
 
