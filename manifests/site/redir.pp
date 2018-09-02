@@ -146,12 +146,6 @@ define nginx::site::redir(
 					value => $ssl_cert;
 				"${ctx}/ssl_certificate_key":
 					value => $ssl_key;
-				"${ctx}/listen_ssl":
-					param => "listen",
-					value => $ssl_ip ? {
-						undef   => "[::]:443 ssl${ssl_default_opt}",
-						default => "${ssl_ip}:443 ssl${ssl_default_opt}"
-					};
 			}
 		} elsif $letsencrypt {
 			nginx::letsencrypt { $name:
