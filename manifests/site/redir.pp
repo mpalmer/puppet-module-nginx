@@ -30,6 +30,12 @@
 #     more than one site to be the default will likely make nginx very
 #     unhappy.
 #
+#  * `letsencrypt` (boolean; optional;default `false`)
+#
+#     An alternative to the `ssl_cert` / `ssl_key` parameters, that causes a
+#     Let's Encrypt certificate to be issued (and used for SSL) for all
+#     names of the site if set to `true`.
+#
 #  * `ssl_cert` (string; optional; default `undef`)
 #
 #     If set to a non-`undef` value, this attribute is interpreted as
@@ -60,11 +66,12 @@
 define nginx::site::redir(
 	$server_names,
 	$target,
-	$default                 = false,
-	$ssl_cert                = undef,
-	$ssl_key                 = undef,
-	$ssl_ip                  = undef,
-	$ssl_default             = false,
+	$default     = false,
+	$letsencrypt = false,
+	$ssl_cert    = undef,
+	$ssl_key     = undef,
+	$ssl_ip      = undef,
+	$ssl_default = false,
 ) {
 	# Where we stick all our config goodies
 	$ctx = "http/site_${name}"
@@ -83,10 +90,6 @@ define nginx::site::redir(
 		$ssl_default_opt = " default ipv6only=off"
 	} else {
 		$ssl_default_opt = ""
-	}
-
-	if $hsts and !$ssl_redirect {
-		fail("HSTS is only supported when ssl_redirect => true")
 	}
 
 	##########################################################################
@@ -123,16 +126,12 @@ define nginx::site::redir(
 		fail("Must specify both ssl_cert and ssl_key in Nginx::Site[${name}]")
 	}
 
-	if $ssl_ip and !$ssl_key {
-		fail("Must specify ssl_cert and ssl_key in Nginx::Site[${name}] when ssl_ip is set")
+	if $ssl_ip and !($ssl_key or $letsencrypt) {
+		fail("Must specify ssl_cert and ssl_key, or letsencrypt, in Nginx::Site[${name}] when ssl_ip is set")
 	}
 
-	if $ssl_cert and $ssl_key {
+	if ($ssl_cert and $ssl_key) or $letsencrypt {
 		nginx::config::parameter {
-			"${ctx}/ssl_certificate":
-				value => $ssl_cert;
-			"${ctx}/ssl_certificate_key":
-				value => $ssl_key;
 			"${ctx}/listen_ssl":
 				param => "listen",
 				value => $ssl_ip ? {
@@ -140,16 +139,42 @@ define nginx::site::redir(
 					default => "${ssl_ip}:443 ssl${ssl_default_opt}"
 				};
 		}
+
+		if $ssl_cert and $ssl_key {
+			nginx::config::parameter {
+				"${ctx}/ssl_certificate":
+					value => $ssl_cert;
+				"${ctx}/ssl_certificate_key":
+					value => $ssl_key;
+				"${ctx}/listen_ssl":
+					param => "listen",
+					value => $ssl_ip ? {
+						undef   => "[::]:443 ssl${ssl_default_opt}",
+						default => "${ssl_ip}:443 ssl${ssl_default_opt}"
+					};
+			}
+		} elsif $letsencrypt {
+			nginx::letsencrypt { $name:
+				ctx         => $ctx,
+				names_array => $names_array,
+			}
+		}
 	}
 
 	##########################################################################
 	# The mighty redirection
+
+	nginx::site::location { "${name}/root":
+		site => $name,
+		path => "/"
+	}
 
 	nginx::config::rewrite {
 		"${ctx}/redirect":
 			from      => '^(.*)$',
 			to        => "${target}\$1",
 			site      => $name,
+			location  => "root",
 			permanent => true;
 	}
 }
