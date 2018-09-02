@@ -32,14 +32,27 @@
 #     it can be a literal path (eg `"/foo"`), a regex (`"^/foo/[a-q]{27}$"`), or
 #     an exact path (`"= /foo"`).
 #
+#  * `root` (string; optional)
+#
+#     If set, defines a `root` directive for the location, pointing to the directory
+#     specified.
+#
 define nginx::site::location(
 	$site,
-	$path
+	$path,
+	$root = undef,
 ) {
 	$name_parts = split($name, "/")
 	$short_name = $name_parts[-1]
 	
 	nginx::config::group { "http/site_${site}/location_${short_name}":
 		context => "location ${path}"
+	}
+
+	if $root {
+		nginx::config::parameter { "http/site_${site}/location_${short_name}/root":
+			param => "root",
+			value => $root,
+		}
 	}
 }
