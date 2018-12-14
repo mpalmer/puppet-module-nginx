@@ -76,7 +76,7 @@ define nginx::config::group(
 	# The directory in which things can be put
 	file { "/etc/nginx/nginx.conf.d/${name}":
 		ensure  => directory,
-		mode    => 0755,
+		mode    => "0755",
 		owner   => "root",
 		group   => "root",
 		purge   => true,

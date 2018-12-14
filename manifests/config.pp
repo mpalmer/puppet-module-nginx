@@ -52,7 +52,7 @@ define nginx::config(
 		content => $content,
 		owner   => "root",
 		group   => "root",
-		mode    => 0444,
+		mode    => "0444",
 		notify  => Noop["nginx/configured"]
 	}
 }

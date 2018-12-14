@@ -93,7 +93,6 @@ define nginx::site::proxy(
 	$ssl_key      = undef,
 	$ssl_ip       = undef,
 	$ssl_redirect = false,
-	$ssl_default  = false,
 	$hsts         = false,
 	$letsencrypt  = false,
 ) {
@@ -249,7 +248,7 @@ define nginx::site::proxy(
 		}
 
 		if $hsts {
-			if $hsts =~ /^\d+$/ {
+			if "$hsts" =~ /^\d+$/ {
 				$hsts_max_age = $hsts
 			} else {
 				$hsts_max_age = 31622400  # One year (or, more precisely,

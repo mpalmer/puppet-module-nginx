@@ -219,7 +219,7 @@ define nginx::site(
 	file {
 		"${base_dir}/logs":
 			ensure  => directory,
-			mode    => 0755,
+			mode    => "0755",
 			owner   => $user,
 			group   => $group,
 			before  => Noop["nginx/configured"];

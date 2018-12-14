@@ -4,6 +4,6 @@ class nginx::ssl::dhparams {
 		source => "puppet:///modules/nginx/etc/nginx/dhparams",
 		owner  => "root",
 		group  => "root",
-		mode   => 0444,
+		mode   => "0444",
 	}
 }

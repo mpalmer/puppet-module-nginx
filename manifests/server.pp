@@ -11,14 +11,14 @@ define nginx::server (
 	file {
 		"/etc/nginx":
 			ensure  => directory,
-			mode    => 0755,
+			mode    => "0755",
 			owner   => "root",
 			group   => "root",
 			require => Noop["nginx/installed"],
 			before  => Noop["nginx/configured"];
 		"/etc/nginx/nginx.conf.d":
 			ensure  => directory,
-			mode    => 0755,
+			mode    => "0755",
 			owner   => "root",
 			group   => "root",
 			recurse => true,
@@ -29,7 +29,7 @@ define nginx::server (
 		"/etc/nginx/nginx.conf.d/README":
 			ensure  => file,
 			source  => "puppet:///modules/nginx/etc/nginx/nginx.conf.d/README",
-			mode    => 0444,
+			mode    => "0444",
 			owner   => "root",
 			group   => "root";
 	}
@@ -40,7 +40,7 @@ define nginx::server (
 			$nginx_server_reload  = "/usr/sbin/service nginx reload"
 		}
 		"Debian": {
-			if to_i($::operatingsystemrelease) >= 7 {
+			if 0 + $::operatingsystemrelease >= 7 {
 				$nginx_server_package = "nginx-full"
 			} else {
 				$nginx_server_package = "nginx"
@@ -65,11 +65,14 @@ define nginx::server (
 	}
 
 	case $::operatingsystem {
-		RedHat,CentOS: {
+		"RedHat", "CentOS": {
 			$nginx_server_user = "nginx"
 		}
-		Debian: {
+		"Debian": {
 			$nginx_server_user = "www-data"
+		}
+		default: {
+			fail("Unsupported \$::operatingsystem '${::operatingsystem}'.  PR welcome.")
 		}
 	}
 
@@ -78,7 +81,7 @@ define nginx::server (
 	file {
 		"/etc/nginx/nginx.conf":
 			source  => "puppet:///modules/nginx/etc/nginx/nginx.conf",
-			mode    => 0444,
+			mode    => "0444",
 			require => Noop["nginx/installed"],
 			before  => Noop["nginx/configured"],
 			notify  => Noop["nginx/configured"];
@@ -86,7 +89,7 @@ define nginx::server (
 			ensure  => directory,
 			owner   => "root",
 			group   => "adm",
-			mode    => 0750,
+			mode    => "0750",
 			before  => Noop["nginx/configured"];
 	}
 	
@@ -98,7 +101,7 @@ define nginx::server (
 			                      "/var/log/nginx/error_logs/*_log",
 			                      "/var/log/nginx/access_logs/*.log",
 			                      "/var/log/nginx/access_logs/*_log"],
-			keep              => 30,
+			keep              => "30",
 			compress          => "delayed",
 			create            => "0640 root adm",
 			sharedscripts     => true,
@@ -150,7 +153,7 @@ define nginx::server (
 	file { "/etc/nginx/nginx.conf.d/http/mime_types.conf":
 		ensure => file,
 		source => "puppet:///modules/nginx/etc/nginx/nginx.conf.d/mime.types",
-		mode   => 0444,
+		mode   => "0444",
 		owner  => "root",
 		group  => "root";
 	}
