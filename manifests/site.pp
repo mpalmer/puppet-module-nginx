@@ -228,7 +228,7 @@ define nginx::site(
 	if defined("logrotate::rule") {
 		logrotate::rule { "nginx-${name}":
 			logs              => "${base_dir}/logs/*.log",
-			keep              => 90,
+			keep              => "90",
 			compress          => "delayed",
 			create            => $log_permissions,
 			sharedscripts     => true,
