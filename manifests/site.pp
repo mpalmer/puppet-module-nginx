@@ -326,7 +326,7 @@ define nginx::site(
 		}
 
 		if $hsts {
-			if $hsts =~ /^\d+$/ {
+			if $hsts =~ Integer {
 				$hsts_max_age = $hsts
 			} else {
 				$hsts_max_age = 31622400  # One year (or, more precisely,
