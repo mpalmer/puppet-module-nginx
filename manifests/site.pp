@@ -201,6 +201,8 @@ define nginx::site(
 		$alt_names_array = []
 	}
 
+	$names_array = concat([$server_name], $alt_names_array)
+
 	if !$ssl_redirect {
 		nginx::config::parameter {
 			"${ctx}/listen":
