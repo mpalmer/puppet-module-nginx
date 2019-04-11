@@ -291,8 +291,23 @@ define nginx::site(
 			fail("Must enable SSL on Nginx::Site[${name}] when ssl_redirect => true")
 		}
 
-		nginx::config::group { "http/site_sslredir_${name}":
-			context => "server"
+		nginx::config::group {
+			"http/site_sslredir_${name}":
+				context => "server";
+			"http/site_sslredir_${name}/location_root":
+				context => "location /";
+		}
+
+		if $letsencrypt {
+			nginx::config::group {
+				"http/site_sslredir_${name}/location_acme_challenge":
+					context => "location /.well-known/acme-challenge";
+			}
+
+			nginx::config::parameter {
+				"http/site_sslredir_${name}/location_acme_challenge/alias":
+					value => "/var/lib/letsencrypt/acme-challenge";
+			}
 		}
 
 		nginx::config::parameter {
@@ -324,6 +339,7 @@ define nginx::site(
 				from      => '^(.*)$',
 				to        => "https://${server_name}\$1",
 				site      => "sslredir_${name}",
+				location  => "root",
 				permanent => true;
 		}
 
