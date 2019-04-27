@@ -24,6 +24,14 @@
 #     unconditionally; if you want to maintain the same protocol, you can
 #     specify `'$scheme://...'` as the URL.
 #
+#  * `resolve_hack` (boolean; optional; default `false`)
+#
+#     If you are pointing the `destination` at a DNS name, and the IP
+#     address behind that name could change, you want to set this option.
+#     It uses the nginx-recommended approach of assigning the redirect
+#     destination as a variable, and then using that variable in the
+#     `proxy_pass` directive.  Sounds insane, right?  Welcome to nginx.
+#
 #  * `default` (boolean; optional; default `false`)
 #
 #     Whether you want this site to be the default for the given `ssl_ip`
@@ -87,6 +95,7 @@
 define nginx::site::proxy(
 	$server_names,
 	$destination,
+	$resolve_hack = false,
 	$default      = false,
 	$ssl_default  = false,
 	$ssl_cert     = undef,
@@ -276,8 +285,9 @@ define nginx::site::proxy(
 	}
 
 	nginx::http_proxy { $name:
-		site        => $name,
-		location    => "root",
-		destination => $destination,
+		site         => $name,
+		location     => "root",
+		destination  => $destination,
+		resolve_hack => $resolve_hack,
 	}
 }

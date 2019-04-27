@@ -16,6 +16,11 @@
 #     The URL to which you wish to proxy.  This can either be a direct URL,
 #     or an upstream name.
 #
+#  * `resolve_hack` (boolean; optional; default `false`)
+#
+#     Whether to force DNS resolution of the destination name by assigning it
+#     to a variable.
+#
 #  * `connect_timeout` (integer; optional; default `60`)
 #
 #     How long, in seconds, to wait to make a connection to the backend.
@@ -37,13 +42,29 @@ define nginx::http_proxy(
 		$site,
 		$location,
 		$destination,
+		$resolve_hack    = false,
 		$connect_timeout = 60,
 		$read_timeout    = 60,
 		$send_timeout    = 60,
 ) {
+	if $resolve_hack {
+		$var_hash = md5("${title}")
+
+		nginx::config::parameter {
+			"http/site_${site}/resolve_hack_variable":
+				param => "set",
+				value => "\$destination_${var_hash} ${destination}";
+			"http/site_${site}/location_${location}/proxy_pass":
+				value => "\$destination_${var_hash}/\$request_uri";
+		}
+	} else {
+		nginx::config::parameter {
+			"http/site_${site}/location_${location}/proxy_pass":
+				value => $destination;
+		}
+	}
+
 	nginx::config::parameter {
-		"http/site_${site}/location_${location}/proxy_pass":
-			value => $destination;
 		"http/site_${site}/location_${location}/proxy_set_header_host":
 			param => "proxy_set_header",
 			value => "Host \$host";
