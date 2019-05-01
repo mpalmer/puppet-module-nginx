@@ -207,7 +207,7 @@ define nginx::site(
 		nginx::config::parameter {
 			"${ctx}/listen":
 				value => $ssl_ip ? {
-					undef   => "[::]:80 ${default_opt}",
+					undef   => "[::]:80${default_opt}",
 					default => "${ssl_ip}:80${default_opt}"
 				};
 		}
@@ -313,8 +313,8 @@ define nginx::site(
 		nginx::config::parameter {
 			"http/site_sslredir_${name}/listen":
 				value => $ssl_ip ? {
-					undef   => "[::]:80",
-					default => "${ssl_ip}:80"
+					undef   => "[::]:80${default_opt}",
+					default => "${ssl_ip}:80${default_opt}"
 				};
 			"http/site_sslredir_${name}/access_log":
 				value => "${base_dir}/logs/access.log combined";
