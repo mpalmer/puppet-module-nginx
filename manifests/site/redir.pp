@@ -76,6 +76,7 @@
 define nginx::site::redir(
 	$server_names,
 	$target,
+	$append_path = true,
 	$default     = false,
 	$letsencrypt = false,
 	$ssl_cert    = undef,
