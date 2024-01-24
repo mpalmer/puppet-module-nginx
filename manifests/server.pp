@@ -7,7 +7,7 @@ define nginx::server (
 		"nginx/configured":
 			require   => Noop["nginx/installed"];
 	}
-	
+
 	file {
 		"/etc/nginx":
 			ensure  => directory,
@@ -24,6 +24,7 @@ define nginx::server (
 			recurse => true,
 			purge   => true,
 			force   => true,
+			notify  => Service["nginx"],
 			require => Noop["nginx/installed"],
 			before  => Noop["nginx/configured"];
 		"/etc/nginx/nginx.conf.d/README":
@@ -92,7 +93,7 @@ define nginx::server (
 			mode    => "0750",
 			before  => Noop["nginx/configured"];
 	}
-	
+
 	if defined("logrotate::rule") {
 		logrotate::rule { "nginx":
 			logs              => ["/var/log/nginx/*.log",
@@ -105,7 +106,7 @@ define nginx::server (
 			compress          => "delayed",
 			create            => "0640 root adm",
 			sharedscripts     => true,
-			postrotate_script => "[ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`";
+			postrotate_script => "invoke-rc.d nginx rotate >/dev/null 2>&1";
 		}
 	}
 
@@ -114,7 +115,7 @@ define nginx::server (
 		"events": context => "events";
 		"http":   context => "http";
 	}
-	
+
 	# Core parameters we like to set
 	nginx::config::parameter {
 		"worker_processes":
@@ -128,7 +129,7 @@ define nginx::server (
 
 		"events/worker_connections":
 			value => $worker_connections;
-		
+
 		"http/access_log":
 			value => "/var/log/nginx/access.log";
 		"http/sendfile":
@@ -148,7 +149,7 @@ define nginx::server (
 		"http/server_names_hash_bucket_size":
 			value => "64";
 	}
-	
+
 	# Kinda cheating, but wotevs
 	file { "/etc/nginx/nginx.conf.d/http/mime_types.conf":
 		ensure => file,

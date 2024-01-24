@@ -55,7 +55,7 @@
 # ... with the added bonus that *anything* could adjust the configuration of
 # any of those levels by dropping their own configuration snippets in at any
 # of those levels.
-# 
+#
 # The configuration options you can use are:
 #
 #  * `title` (string; *namevar*)
@@ -82,16 +82,17 @@ define nginx::config::group(
 		purge   => true,
 		recurse => true,
 		force   => true,
+		notify  => Service["nginx"],
 	}
 
 	# Template variables
 	$nginx_config_group_context = $context
 	$nginx_config_group_name    = $name
-	
+
 	# The config that includes things in the directory in which things can be
 	# put
 	nginx::config { $name:
 		content => template("nginx/etc/nginx/config-group")
 	}
 }
-		
+
