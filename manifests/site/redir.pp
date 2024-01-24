@@ -21,7 +21,17 @@
 #
 #     The destination of the redirect.  This must be an HTTP or HTTPS
 #     URL.  Note that the path of the initial request will be appended
-#     to this URL.
+#     to this URL unless `append_path` is set to `false`.
+#
+#  * `append_path` (boolean; optional; default `true`)
+#
+#     If set to `true` (the default), then whatever path was given to the
+#     redirection vhost will be appended to the `target` parameter when
+#     generating the destination of the redirect.  This is useful when you're
+#     moving one site to a new name.  On the other hand, if you just want all
+#     traffic to any part of a vhost to go to a single URL, then you set this
+#     attribute to `false`, and the redirect will always be to the exact URL
+#     specified in `target`.
 #
 #  * `default` (boolean; optional; default `false`)
 #
@@ -163,10 +173,15 @@ define nginx::site::redir(
 		path => "/"
 	}
 
+	$target_pattern = $append_path ? {
+		true  => "${target}\$1",
+		false => $target,
+	}
+
 	nginx::config::rewrite {
 		"${ctx}/redirect":
 			from      => '^(.*)$',
-			to        => "${target}\$1",
+			to        => $target_pattern,
 			site      => $name,
 			location  => "root",
 			permanent => true;
